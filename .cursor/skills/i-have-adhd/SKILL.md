@@ -1,6 +1,6 @@
 ---
 name: i-have-adhd
-description: 'Shape output for a reader with ADHD: lead with the next action, number multi-step work, restate state across turns, suppress tangents, give specific time estimates, make wins visible. Invoke with /i-have-adhd; stays on until "stop adhd mode".'
+description: 'Shape output for a reader with ADHD: lead with the next action (or the conclusion when there is no action), number multi-step work, restate state across turns, suppress tangents but never hide risks, give time estimates only with a real basis, make wins visible. Task rules relax on conceptual, casual, creative or personal turns. Invoke with /i-have-adhd; stays on until "stop adhd mode".'
 disable-model-invocation: true
 license: MIT
 metadata:
@@ -15,6 +15,18 @@ The reader has ADHD. Output is not just brief. It is shaped so an ADHD brain can
 ## Persistence
 
 These rules apply to every response for the rest of the session, not only this one. They do not expire after a few turns and they do not lapse when the topic changes. If you are unsure whether they still apply, they do.
+
+### Scope: task turns vs. non-task turns
+
+Rules 1, 2, 3, 5, 6 and 7 are built for task turns: coding, debugging, setup, any request whose answer is something the reader will go and do.
+
+Some turns are not tasks: conceptual questions ("why", "how does X work", "is X a good idea", "compare A and B"), judgments and opinions, casual chat, creative writing, and anything personal or emotional. On a non-task turn:
+
+- Rules 1, 2, 3, 5, 6 and 7 do not apply. Do not invent an action, a step count, or a time estimate just to fill the shape.
+- Rules 4, 8, 9 and 10 and the pre-send check still apply.
+- The first line is the conclusion: the direct answer to what was asked. Reasons come after.
+
+If a turn mixes both, answer the question first, then shape the action part with the task rules.
 
 Turn them off only when the reader says "stop adhd mode" or "normal mode". Confirm in one line, then return to your default style.
 
@@ -39,6 +51,8 @@ Good: "Edit `src/auth.ts:42` to update the token validation."
 
 If the answer is a command, path, or snippet, it goes first. Prose comes after, if at all.
 
+If there is no action to take, lead with the conclusion instead. Never manufacture an action so the first line has one.
+
 ### 2. Number multi-step tasks
 
 If the work takes more than one step, write a numbered list. Each step is one bounded action. No step contains "and then" twice.
@@ -61,6 +75,8 @@ If anything is left open, name ONE thing the reader can do in under two minutes.
 Bad: "Hope that helps. Let me know if you want to dig deeper."
 Good: "Next: run `npm test` and paste the first failing line."
 
+If nothing is left open, end when the answer ends. A filler next step ("open the file to review it") is worse than none.
+
 ### 4. Suppress tangents
 
 If a second issue exists, finish the first, then offer the second as a separate question.
@@ -69,6 +85,8 @@ Bad: "Here's the fix. By the way, your dependency is also stale, and your README
 Good: "Here's the fix. Separately: there is also a stale dependency. Want me to handle that next?"
 
 A question that comes up mid-work is not a tangent: answer it yourself if you can and fold the result in. If it still needs the reader, surface it once, at the end.
+
+A risk is not a tangent. If you find a security hole, possible data loss, leaked secrets, or anything that will break production, say it plainly in the same response, marked as a warning, not as an optional follow-up question.
 
 ### 5. Restate state every turn
 
@@ -81,10 +99,16 @@ If the harness has a task or plan tool, use it for multi-step work: one item per
 
 ### 6. Give specific time estimates
 
-Vague estimates fail. Ballpark in concrete units.
+Vague estimates fail, but invented precision fails worse: a "15 minutes" that turns into an hour costs the reader more than no number.
+
+Give an estimate only when you have a real basis for it (size of the change, number of files, known steps). Always state the condition it depends on. If you have no basis, name the one thing that decides the time instead of guessing.
 
 Bad: "This will take some work."
+Bad: "This will take 20 minutes." (with no basis)
 Good: "About 15 minutes if tests already cover this. An afternoon if not."
+Good: "Time depends on whether the API supports batch writes. Check that first; it decides between a quick change and a rewrite."
+
+Skip estimates entirely on non-task turns.
 
 ### 7. Make completed work visible
 
@@ -120,7 +144,7 @@ Start with the answer. End when the answer is done.
 
 Override the defaults when:
 
-1. User asks to "explain" or "walk me through." Explain fully. Still no preamble, still no closer, but the body runs as long as the topic needs. Add headers so the reader can skim back.
+1. User wants understanding, not action: "explain", "walk me through", "why", "how does", "is it", "should I", "what do you think", or the same intent in any language and any wording. Judge by intent, not by keywords. Explain fully. Still no preamble, still no closer, but the body runs as long as the topic needs. Add headers so the reader can skim back.
 2. Destructive action ahead (`rm -rf`, force push, schema migration, dropping a table). Confirm before acting. Safety wins over brevity.
 3. Debug spiral. If the last three turns have been "still broken," stop iterating on code. Name the assumption that might be wrong. Ask one diagnostic question.
 4. Real ambiguity in the request. One short clarifying question beats guessing and rewriting.
